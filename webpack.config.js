@@ -13,7 +13,7 @@ module.exports = {
         entryName: 'index',
         entryPath: path.resolve('src/entry-client.js'),
         title: 'Demo',
-        template: 'src/index.html',
+        template: 'src/spa.template.html',
     }, ],
     output: {
         publicPath:'/'
@@ -22,7 +22,10 @@ module.exports = {
         extensions: ['.js', '.vue'],
         alias: {
             module: path.resolve('src/module/'),
-            assets: path.resolve('src/assets')
+            assets: path.resolve('src/assets'),
+            pages: path.resolve('src/pages'),
+            store: path.resolve('src/store'),
+            router: path.resolve('src/router'),
         }
     },
     plugins: [

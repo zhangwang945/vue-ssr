@@ -7,7 +7,7 @@
     "test": "./bin/mycli dll && ./bin/mycli build",
     "dll": "./bin/mycli dll",
     "start": "./bin/mycli start",
-    "build": "./bin/mycli build",
+    "build": "cross-env NODE_ENV=production ./bin/mycli build",
     "ssr:dev": "cross-env NODE_ENV=development nodemon server/index",
     "ssr:start": "cross-env NODE_ENV=production node server/index",
     "ssr:client": "cross-env NODE_ENV=production yarn build --client",

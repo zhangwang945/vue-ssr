@@ -16,7 +16,6 @@ export default context => {
       // 对所有匹配的路由组件调用 `asyncData()`
       Promise.all(matchedComponents.map(Component => {
         if (Component.asyncData) {
-          console.log(99);
           return Component.asyncData({
             store,
             route: router.currentRoute

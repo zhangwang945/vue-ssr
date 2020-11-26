@@ -1,13 +1,13 @@
 <template>
   <div>
-    root{{ item.id }}4455
+    queryId:{{ item.id }}
     <Child />
   </div>
 </template>
 <script>
+import {mapGetters} from 'vuex'
 import Child from "./Child";
 import fooStoreModule from "../store/module/foo";
-console.log(999);
 export default {
   name: "Root",
   components: { Child },
@@ -16,11 +16,13 @@ export default {
     store.registerModule("foo", fooStoreModule);
     console.log("async" + route.query.id);
     return Promise.all([
-      store.dispatch("fetchItem", 999),
+      store.dispatch("fetchItem", route.query.id),
       store.dispatch("foo/inc"),
     ]);
   },
+  serverCacheKey: props => 'Root1',
   computed: {
+    ...mapGetters({storeItems:'storeItems'}),
     item() {
       return this.$store.state.items;
     },

@@ -1,9 +1,18 @@
 const path = require('path')
+const chalk = require('chalk');
 
 function setupDev(app, callback) {
     const MemoryFileSystem = require("memory-fs");
     const webpack = require('webpack');
+    const address = require('address');
+    const ip = address.ip()
+
     let serverBundle, clientManifest
+
+    function compilingLog() {
+        console.clear()
+        console.log(chalk.blue('client compiling...'));
+    }
 
     function update() {
         if (serverBundle && clientManifest) {
@@ -18,14 +27,22 @@ function setupDev(app, callback) {
     const clientFs = new MemoryFileSystem()
     const devMiddleware = require('webpack-dev-middleware')(clientCompiler, {
         publicPath: clientWebpackConfig.output.publicPath,
-        logLevel: 'error',
+        logLevel: 'silent',
         fs: clientFs
     })
-
+    const handleBuildStats = require('../webpack/tool/handleBuildStats')
     clientCompiler.hooks.done.tap('getClientManifest', stats => {
         const clientManifestStr = clientFs.readFileSync(path.join(clientWebpackConfig.output.path, 'vue-ssr-client-manifest.json'), 'utf-8')
         clientManifest = JSON.parse(clientManifestStr)
         update()
+        handleBuildStats(clientWebpackConfig, stats, () => {
+            console.log(chalk.green(`Project is running at http://localhost:${process.env.port}
+                      http://${ip}:${process.env.port}\n`));
+        })
+    })
+
+    clientCompiler.hooks.watchRun.tap('watchClientRun', () => {
+        compilingLog()
     })
 
     app.use(devMiddleware)

@@ -2,9 +2,6 @@ const merge = require("webpack-merge");
 const path = require('path')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const {
-    CleanWebpackPlugin
-} = require('clean-webpack-plugin');
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const os = require('os');
 const {
@@ -15,14 +12,13 @@ const {
 } = require(path.resolve('webpack.config.js'))
 
 const isPro = process.env.NODE_ENV === 'production'
-const isBuildServer = process.env.BUILD_BUNDLE === 'server'
+const isBuildServer = process.env.SSR === 'server'
 
 function selectStyleLoader() {
     const arr = []
     if (!isPro) {
         arr.push('vue-style-loader')
     } else if (!isBuildServer) {
-        console.log(444444);
         arr.push(MiniCssExtractPlugin.loader)
     }
     return arr
@@ -167,7 +163,7 @@ module.exports = function() {
                 const plugins = [
                     new VueLoaderPlugin(),
                     new webpack.DefinePlugin({
-                        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+                        'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
                     }),
                 ]
                 isPro && !isBuildServer && plugins.push(new MiniCssExtractPlugin({

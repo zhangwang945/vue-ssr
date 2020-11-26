@@ -12,6 +12,11 @@ export function createStore () {
     state: {
       items: {id:33333}
     },
+    getters:{
+      storeItems(state){
+        return state.items.id
+      }
+    },
     actions: {
       fetchItem ({ commit }, id) {
         return Promise.resolve().then(()=>{

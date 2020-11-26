@@ -4,7 +4,6 @@ const webpack = require('webpack')
 const AddAssetHtmlPlugin = require('add-asset-html-webpack-plugin');
 const VueSSRClientPlugin = require('vue-server-renderer/client-plugin')
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const TerserJSPlugin = require('terser-webpack-plugin');
 const {
     CleanWebpackPlugin
@@ -13,7 +12,6 @@ const CopyPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const baseConfig = require('./webpack.base');
 const formateEntry = require('./tool/fomateEntry');
-const { plugins } = require("../webpack.config");
 
 const {
     entries,
@@ -28,8 +26,8 @@ module.exports = function() {
         entryName: 'app',
         entryPath: path.resolve('src/entry-client.js'),
         title: 'Demo',
-        template: 'src/ssr.template.html',
-        outPageName: 'ssr.template.html'
+        template: 'src/spa.template.html',
+        outPageName: 'spa.template.html'
     }, ])
     return merge(
         baseConfig(), {
@@ -68,7 +66,6 @@ module.exports = function() {
             },
             plugins: (function() {
                 const plugins = [
-                    // new CleanWebpackPlugin(),
                     ...htmlPluginInstances,
                     new webpack.DllReferencePlugin({
                         manifest: require(path.resolve("dll/dist/dll-manifest.json")) // eslint-disable-line
@@ -79,7 +76,11 @@ module.exports = function() {
                         outputPath: 'js',
                         publicPath: 'js'
                     }),
-                    new VueSSRClientPlugin()
+                    new VueSSRClientPlugin(),
+                    new webpack.DefinePlugin({
+                        'process.env.IS_SSR': JSON.stringify(true)
+                    }),
+                
 
                 ]
                 if (isPro) {

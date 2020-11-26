@@ -39,7 +39,7 @@ export default {
     },
   },
   mounted() {
-    console.log(11111);
+    console.log(11111,process.env.IS_SSR,process.env.NODE_ENV);
     // fetch('/api/v5/home/index').then((a)=>{
     //   console.log(a.json());
     // }).catch(()=>{

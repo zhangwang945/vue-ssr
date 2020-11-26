@@ -2,12 +2,9 @@ const webpack = require('webpack')
 const webpackDevServer = require('webpack-dev-server')
 const chalk = require('chalk');
 const detectPort = require('./tool/detectPort')
-const formatStats = require('./tool/formatStats')
+const handleBuildStats = require('./tool/handleBuildStats')
 const fs = require('fs')
 const path = require('path');
-const {
-    error
-} = require('console');
 
 module.exports = function(action, option) {
     if (action === 'start') {
@@ -28,13 +25,13 @@ module.exports = function(action, option) {
             })
 
     } else if (action === 'build') {
-        console.log(99, process.env.NODE_ENV);
         // process.env.NODE_ENV = 'production'
         let webpackProdConfig
         if (option.client) {
+            process.env.SSR = 'client'
             webpackProdConfig = require('./webpack.ssr.client')
         } else if (option.server) {
-            process.env.BUILD_BUNDLE = 'server'
+            process.env.SSR = 'server'
             webpackProdConfig = require('./webpack.ssr.server')
         } else {
             webpackProdConfig = require('./webpack.prod')
@@ -46,25 +43,9 @@ module.exports = function(action, option) {
             if (err) {
                 console.error(err)
             } else {
-                if (stats.hasErrors()) {
-                    console.log(chalk.red.bold('\ncompile failed!\n'));
-                    stats.compilation.errors.forEach(err => {
-                        console.error(`${err.message}\n`)
-                    });
-
-                } else {
-                    console.log(chalk.green.bold(`Compiled successfully in ${stats.endTime - stats.startTime}ms\n`));
-                    console.log(`${chalk.cyan.bold('Assets Root Directory: ')}${config.output.path}\n`);
-
-                    formatStats(stats)
-                    if (stats.hasWarnings()) {
-                        console.log(chalk.yellow.bold('\ncompiled with warning!\n'));
-                        stats.compilation.warnings.forEach(warning => {
-                            console.warn(chalk.yellow(`${warning.message}\n`))
-                        });
-                    }
+                handleBuildStats(config, stats, () => {
                     option.profile && fs.writeFileSync(path.resolve('stats.json'), JSON.stringify(stats.toJson()));
-                }
+                })
             }
         })
 
@@ -77,24 +58,7 @@ module.exports = function(action, option) {
             if (err) {
                 console.error(err)
             } else {
-                if (stats.hasErrors()) {
-                    console.log(chalk.red.bold('\ncompile failed!\n'));
-                    stats.compilation.errors.forEach(err => {
-                        console.error(`${err.message}\n`)
-                    });
-
-                } else {
-                    console.log(chalk.green.bold(`Compiled successfully in ${stats.endTime - stats.startTime}ms\n`));
-                    console.log(`${chalk.cyan.bold('Assets Root Directory: ')}${config.output.path}\n`);
-
-                    formatStats(stats)
-                    if (stats.hasWarnings()) {
-                        console.log(chalk.yellow.bold('\ncompiled with warning!\n'));
-                        stats.compilation.warnings.forEach(warning => {
-                            console.warn(chalk.yellow(`${warning.message}\n`))
-                        });
-                    }
-                }
+                handleBuildStats(config, stats)
             }
         })
     }

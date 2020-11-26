@@ -1,25 +1,36 @@
 const express = require('express')
 const path = require('path')
+const fs = require('fs')
 const LRU = require('lru-cache')
 const app = express();
 // const createApp = require('./app')
 const { createBundleRenderer } = require('vue-server-renderer');
 const setupDev = require('./setupDev')
+const getCpuUsage = require('./utils/getCpuUsage')
+let isHighLoad = false
+const LOAD_THRESOLD = 0.6 //cup阀值
 
-const template = require('fs').readFileSync(path.resolve('src/ssr.template.html'), 'utf-8');
+getCpuUsage(2000, function(info) {
+    isHighLoad = info >= LOAD_THRESOLD
+})
+
+const template = fs.readFileSync(path.resolve('src/ssr.template.html'), 'utf-8');
 
 const isPro = process.env.NODE_ENV === 'production'
-let renderer, dllPath
-
+let renderer, dllPath, spaTemplate
+if (isPro) {
+    spaTemplate = fs.readFileSync(path.resolve('dist/spa.template.html'), 'utf-8');
+}
+// todo  降级方案 服务端渲染降级客户端渲染
 function createRenderer(serverBundle, clientManifest) {
     // 获取dllpath
     dllPath = clientManifest.all.find(file => /dll\.vendors.*\.js$/.test(file))
     if (dllPath) dllPath = clientManifest.publicPath + dllPath
-
     return createBundleRenderer(serverBundle, {
         inject: false,
         template,
-        clientManifest
+        clientManifest,
+        cache: new LRU({ max: 10000, maxAge: 100 * 10000 }) //组件级cache
     })
 }
 if (isPro) {
@@ -60,8 +71,7 @@ const context = {
 
 app.use(express.static('dist'))
 app.get('*', (req, res) => {
-
-    // 缓存是否命中
+    // 页面级缓存是否命中
     const hit = microCache.get(req.url)
     if (hit) {
         return res.end(hit)
@@ -79,5 +89,5 @@ app.get('*', (req, res) => {
         console.log('url:', req.url);
     });
 })
-
-app.listen(3000);
+const port = process.env.port = 3000
+app.listen(port);

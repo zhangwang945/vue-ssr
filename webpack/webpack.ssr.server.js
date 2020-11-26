@@ -2,8 +2,6 @@ const merge = require("webpack-merge");
 const path = require('path')
 const nodeExternals = require('webpack-node-externals')
 const VueSSRServerPlugin = require('vue-server-renderer/server-plugin')
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const TerserJSPlugin = require('terser-webpack-plugin');
 const baseConfig = require('./webpack.base');
 const formateEntry = require('./tool/fomateEntry')
 
@@ -19,10 +17,10 @@ module.exports = function() {
         entryName: 'index',
         entryPath: path.resolve('src/entry-server.js'),
         title: 'Demo',
-        template: 'src/index.html',
+        template: 'src/ssr.template.html',
         outPageName: 'ssr.template.html'
     }, ])
-    return merge({
+    return merge(baseConfig(), {
             entry,
 
             // 这允许 webpack 以 Node 适用方式(Node-appropriate fashion)处理动态导入(dynamic import)，
@@ -50,13 +48,13 @@ module.exports = function() {
             // 构建为单个 JSON 文件的插件。
             // 默认文件名为 `vue-ssr-server-bundle.json`
             module: {
-              
+
             },
             plugins: [
                 ...htmlPluginInstances,
                 new VueSSRServerPlugin()
             ]
         },
-        baseConfig(),
+
         webpackConfig)
 }
